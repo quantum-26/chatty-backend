@@ -1,34 +1,39 @@
 import { typeDefs } from './Schemas/gqlSchema.js';
 import resolvers from './Resolver/gqlResolvers.js';
-import { GraphQLServer, PubSub } from 'graphql-yoga';
+import { createServer } from 'graphql-yoga';
+import { PubSub } from 'graphql-subscriptions';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import express from 'express';
 import userRouter from './Route/Users.js';
+import { makeExecutableSchema } from '@graphql-tools/schema'
 
 // configuring port and configs
 const app = express();
 dotenv.config();
-const graphqlListening = process.env.GRAPHQL_PORT || 4000;
 const serverPort = process.env.SERVER_PORT || 7000;
 
-console.log('server port');
-console.log(graphqlListening);
-console.log(serverPort);
 // express coonection and routes
 app.use(express.json());
 app.use(cors());
+app.use("/users", userRouter);
+
+// Graphql server connection
+// both of the server and graphql are running on port 7000
+// http://localhost:7000/graphql to access the query , mutation, subscription
+const pubsub = new PubSub();
+const schema = makeExecutableSchema({
+  resolvers: [resolvers],
+  typeDefs: [typeDefs],
+  context: { pubsub },
+})
+const server = createServer({ schema })
+app.use('/graphql', server);
+
 app.listen(serverPort, () => {
   console.log(`The api server has started on port: ${serverPort}`);
 })
 
-app.use("/users", userRouter);
-// Graphql server connection
-const pubsub = new PubSub();
 
-const server = new GraphQLServer({ typeDefs, resolvers, context: { pubsub } });
-server.start(() => {
-  console.log(`GraphQl Server on http://localhost:${graphqlListening}/`);
-});
 
 
