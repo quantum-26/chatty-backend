@@ -9,7 +9,7 @@ import userRouter from './Route/Users.js';
 // configuring port and configs
 const app = express();
 dotenv.config();
-const graphqlListening = process.env.GRAPHQL_Port || 4000;
+const graphqlListening = process.env.GRAPHQL_PORT || 4000;
 const serverPort = process.env.SERVER_PORT || 7000;
 
 // express coonection and routes
