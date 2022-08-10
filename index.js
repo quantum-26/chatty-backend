@@ -29,7 +29,12 @@ const schema = makeExecutableSchema({
 })
 const server = createServer({ schema })
 app.use('/graphql', server);
-app.use(express.static("public"));
+app.get('/', (req, res) => { // send a get request to root directory ('/' is this file (app.js))
+  return res.status(200).json({
+    success: false, 
+  })
+})
+// app.use(express.static("public"));
 app.listen(serverPort, () => {
   console.log(`The api server has started on port: ${serverPort}`);
 })
