@@ -11,7 +11,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 // configuring port and configs
 const app = express();
 dotenv.config();
-const serverPort = process.env.SERVER_PORT || 7000;
+const PORT = process.env.PORT || 7000;
 
 // express coonection and routes
 app.use(express.json());
@@ -35,8 +35,8 @@ app.get('/', (req, res) => { // send a get request to root directory ('/' is thi
   })
 })
 // app.use(express.static("public"));
-app.listen(serverPort, () => {
-  console.log(`The api server has started on port: ${serverPort}`);
+app.listen(PORT, () => {
+  console.log(`The api server has started on port: ${PORT}`);
 })
 
 
