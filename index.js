@@ -12,6 +12,9 @@ dotenv.config();
 const graphqlListening = process.env.GRAPHQL_PORT || 4000;
 const serverPort = process.env.SERVER_PORT || 7000;
 
+console.log('server port');
+console.log(graphqlListening);
+console.log(serverPort);
 // express coonection and routes
 app.use(express.json());
 app.use(cors());
