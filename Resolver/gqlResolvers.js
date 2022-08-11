@@ -1,4 +1,9 @@
 import messageServices from "../Services/messageServices.js";
+// import { GooglePubSub } from '@axelspringer/graphql-google-pubsub';
+// const pubsub = new GooglePubSub();
+import { PubSub } from 'graphql-subscriptions';
+
+const pubsub = new PubSub();
 
 const subscribers = []; //stores any new messages sent upon listening
 
@@ -21,7 +26,8 @@ const fetchMessages = async() => {
     return messages;
 }
 
-const messages = await fetchMessages();
+const SOMETHING_CHANGED_TOPIC = 'something_changed';
+const fetch_messages = await fetchMessages();
 //to push new users to the subscribers array
 const onMessagesUpdates = (fn) => subscribers.push(fn);
 
@@ -29,7 +35,8 @@ const resolvers = {
     //add all the resolver functions here
     Query: { //gets all messages
         messages: async () => {
-            return messages;
+            pubsub.publish(SOMETHING_CHANGED_TOPIC, { messages: fetch_messages});
+            return fetch_messages;
          } //returns the messages array
     },
 
@@ -43,28 +50,18 @@ const resolvers = {
             const data = await messageServices.postMessage(msgObj);
             const id = data._id.toString();
             
-            messages.push({id, senderName, receiverName, text : data.text});
-            subscribers.forEach((fn) => fn());
+            fetch_messages.push({id, senderName, receiverName, text : data.text});
+            pubsub.publish(SOMETHING_CHANGED_TOPIC, { messages: fetch_messages});
+            
             return id; //return the id
         },
     },
 
     Subscription: {
         messages: {
-          subscribe: async (parent, args, { pubsub }) => {
-            //create random number as the channel to publish messages to
-            const channel = Math.random().toString(36).slice(2, 15);
-
-            //push the user to the subscriber array with onMessagesUpdates function and 
-            //publish updated messages array to the channel as the callback
-            onMessagesUpdates(() => pubsub.publish(channel, { messages }));
-    
-            //publish all messages immediately once a user subscribed
-            setTimeout(() => pubsub.publish(channel, { messages }), 0);
-    
-            //returns the asyncIterator
-            return pubsub.asyncIterator(channel);
-          },
+            subscribe: () => { 
+                return pubsub.asyncIterator(SOMETHING_CHANGED_TOPIC)
+            },
         },
     },
 }
